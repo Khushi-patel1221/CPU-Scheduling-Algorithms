@@ -1,0 +1,748 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    while(1)
+    {
+        int choice;
+        printf("Choose From The Following Process Scheduling Algorithms:\n");
+        printf("1.First-Come First-Served\n");
+        printf("2.Shortest Job First\n");
+        printf("3.Round Robin Scheduling\n");
+        printf("4.Priority Scheduling(Non Preemptive)\n");
+        printf("5.Priority Scheduling(Preemptive)\n");
+        printf("6.Shortest Remaining Time First\n");
+        printf("7.Longest Remaining Time First\n");
+        printf("8.Exit\n");
+        scanf("%d",&choice);
+        switch(choice)
+        {
+            case 1:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    struct node *next;
+                };
+                float timer=0;
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node* new=NULL;
+                
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%2)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%2)
+                            new->arrivaltime=num;
+                            else
+                            new->bursttime=num;
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    float sumt=0,sumw=0;
+                    int x,i=0;
+                    current=head;
+                    while(current!=NULL)
+                    {
+                        i++;
+                        if(current->arrivaltime<=timer)
+                        {
+                            timer=timer+current->bursttime;
+                            for(int k=0;k<current->bursttime;k++)
+                            printf("P%d ",i);
+                            x=timer-current->arrivaltime;//turn around time
+                        }
+                        else
+                        {
+                            timer=current->arrivaltime+current->bursttime;
+                            for(int k=0;k<current->arrivaltime-timer;k++)
+                            printf("GAP ");
+                            for(int k=0;k<current->bursttime;k++)
+                            printf("P%d ",i);
+                            x=timer-current->arrivaltime;
+                        }
+                        sumt=sumt+x;
+                        sumw=sumw+x-current->bursttime;
+                        current=current->next;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }    
+                break;
+            }
+            case 2:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    float og;
+                    struct node *next;
+                };
+                
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node *new=NULL;
+                
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%2)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%2)
+                            new->arrivaltime=num;
+                            else
+                            {
+                                new->bursttime=num;
+                                new->og=num;
+                            }
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    int y=n;
+                    float sumt=0,sumw=0;
+                    int minb=10000;
+                    for(int timer=0;timer<1000;timer++)
+                    {
+                        current=head;
+                        int x=1,z,flag=0;
+                        minb=10000;
+                        while(current!=NULL)
+                        {
+                            if(current->arrivaltime<=timer && current->bursttime!=0)
+                            {
+                                if(current->bursttime<minb)
+                                {
+                                    minb=current->bursttime;
+                                    z=x;
+                                    previous=current;
+                                    flag=1;
+                                }
+                            }
+                            x++;
+                            current=current->next;
+                        }
+                        if(flag==1)
+                        {
+                            timer=timer+previous->bursttime-1;
+                            previous->bursttime=0;
+                            if(previous->bursttime==0)
+                            {
+                                sumt=sumt+timer-previous->arrivaltime+1;
+                                sumw=sumw+timer-previous->arrivaltime-previous->og+1;
+                                y--;
+                            }
+                            printf("P%d ",z);
+                        }
+                        else
+                        printf("GAP ");
+                        if(y==0)
+                        break;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }
+                break;
+            }
+            case 3:
+            {
+                int n=0;
+                FILE *f = fopen("Data.txt","r");
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    fscanf(f,"%d", &n);
+                }
+                fclose(f);
+                printf("%d",n);
+                int arrivaltime[n];
+                int arrivaltime1[n];
+                int bursttime[n];
+                int bursttime1[n];
+                int cttime[n];
+                int tat[n];
+                int waittime[n];
+                int readdyqueue[999999];
+                int timequnata;
+                int x = 0,y=0;
+                int time=0,min;
+                float sum1=0,sum2=0;
+                int flag=0;
+                int cs;
+                for(int i=0;i<999999;i++)
+                {
+                    readdyqueue[i]=-2;
+                }
+                FILE *h = fopen("Data.txt","r");
+                if (h == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    while (fscanf(h, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        {}
+                        else if(j<=2*n)
+                        {
+                            if(j%2)
+                            {
+                                arrivaltime[j/2]=num;
+                                arrivaltime1[j/2]=num;
+                            }
+                            else
+                            {
+                                bursttime[j/2-1]=num;
+                                bursttime1[j/2-1]=num;
+                            }
+                        }
+                        else if(j==2*n+1)
+                        timequnata=num;
+                        else
+                        cs=num;
+                        j++;
+                    }
+                    fclose(h);
+                    int count = 0;
+                    while(1)
+                    {
+                        int index;
+                        int flag1=0;
+                        int flag=0;
+                        count++;
+                        for(int i=0;i<n;i++)
+                        {
+                            if(bursttime[i]!=0)
+                            {
+                                flag = 1;
+                            }
+                        }
+                        if(!flag)
+                        {
+                            break;
+                        }
+                        for(int i=0;i<n;i++)
+                        {
+                            if(time>=arrivaltime[i] && arrivaltime[i]!=-1)
+                            {
+                                readdyqueue[x] = i;
+                                arrivaltime[i] = -1;
+                                x++;
+                            }
+                        }
+                        if(bursttime[readdyqueue[y]]<=timequnata && readdyqueue[y]!=-2)
+                        {
+                            time = time+bursttime[readdyqueue[y]];
+                            bursttime[readdyqueue[y]]=0;
+                            cttime[readdyqueue[y]] = time;
+                            tat[readdyqueue[y]] = cttime[readdyqueue[y]] - arrivaltime1[readdyqueue[y]];
+                            waittime[readdyqueue[y]] = tat[readdyqueue[y]] - bursttime1[readdyqueue[y]];
+                            time = time + cs;
+                            y++;
+                            flag1=1;
+                        }
+                        else if(readdyqueue[y]!=-2)
+                        {
+                            bursttime[readdyqueue[y]] = bursttime[readdyqueue[y]]-timequnata;
+                            time = time+timequnata;
+                            flag1=1;
+                            for(int i=0;i<n;i++)
+                            {
+                                if(time>=arrivaltime[i] && arrivaltime[i]!=-1)
+                                {
+                                    readdyqueue[x] = i;
+                                    arrivaltime[i] = -1;
+                                    x++;
+                                }
+                            }
+                            if(y==1 && readdyqueue[y]!=readdyqueue[0])
+                            {
+                                time = time+cs;
+                            }
+                            if((readdyqueue[y]!=readdyqueue[y-1])&&y!=0)
+                            {
+                                time = time+cs;
+                            }
+                            readdyqueue[x] = readdyqueue[y];
+                            x++;
+                            y++;
+                        }
+                        if(!flag1)
+                        {
+                            for(int i=0;i<n;i++)
+                            {
+                                if(arrivaltime[i]!=-1)
+                                {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            time = time+(time-arrivaltime[index]);
+                        }  
+                    }
+                    printf("\n");
+                    printf("-------------------GANTT CHART-------------------\n\n\n");
+                    for(int i=0;i<y;i++)
+                    {
+                        if(y!=0 && readdyqueue[i]!=readdyqueue[i-1])
+                        {
+                            printf("|CS=%d| P%d |",cs,readdyqueue[i]+1);
+                        }
+                        else
+                        {
+                            printf(" P%d|",readdyqueue[i]+1);
+                        }
+                    }
+                    printf("\n\n\n\n");
+                    printf("AT\tBT\tCT\tTAT\tWT\n");
+                    for(int i=0;i<n;i++)
+                    {
+                        printf("%d\t%d\t%d\t%d\t%d\n",arrivaltime1[i],bursttime1[i],cttime[i],tat[i],waittime[i]);
+                        sum1 = sum1+tat[i];
+                        sum2 = sum2+waittime[i];
+                    }
+                    printf("The Average Turn Around Time %f\n",sum1/n);
+                    printf("The Average Waiting Time %f\n",sum2/n);
+                break;
+                }
+            }
+            case 4:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    int priority;
+                    float og;
+                    struct node *next;
+                };
+                
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node *new=NULL;
+                
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%3==1)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%3==1)
+                            new->arrivaltime=num;
+                            else if(j%3==2)
+                            {
+                                new->bursttime=num;
+                                new->og=num;
+                            }
+                            else
+                            new->priority=num;
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    int y=n;
+                    float sumt=0,sumw=0;
+                    int minp=10000;
+                    for(int timer=0;timer<1000;timer++)
+                    {
+                        current=head;
+                        int x=1,z,flag=0;
+                        minp=10000;
+                        while(current!=NULL)
+                        {
+                            if(current->arrivaltime<=timer && current->bursttime!=0)
+                            {
+                                if(current->priority<minp)
+                                {
+                                    minp=current->priority;
+                                    z=x;
+                                    previous=current;
+                                    flag=1;
+                                }
+                            }
+                            x++;
+                            current=current->next;
+                        }
+                        if(flag==1)
+                        {
+                            timer=timer+previous->bursttime-1;
+                            previous->bursttime=0;
+                            if(previous->bursttime==0)
+                            {
+                                sumt=sumt+timer-previous->arrivaltime+1;
+                                sumw=sumw+timer-previous->arrivaltime-previous->og+1;
+                                y--;
+                            }
+                            printf("P%d ",z);
+                        }
+                        else
+                        printf("GAP ");
+                        if(y==0)
+                        break;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }    
+                break;
+            }
+            case 5:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    int priority;
+                    float og;
+                    struct node *next;
+                };
+                
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node *new=NULL;
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%3==1)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%3==1)
+                            new->arrivaltime=num;
+                            else if(j%3==2)
+                            {
+                                new->bursttime=num;
+                                new->og=num;
+                            }
+                            else
+                            new->priority=num;
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    int y=n;
+                    float sumt=0,sumw=0;
+                    int minp=10000;
+                    for(int timer=0;timer<1000;timer++)
+                    {
+                        current=head;
+                        int x=1,z,flag=0;
+                        minp=10000;
+                        while(current!=NULL)
+                        {
+                            if(current->arrivaltime<=timer && current->bursttime!=0)
+                            {
+                                if(current->priority<minp)
+                                {
+                                    minp=current->priority;
+                                    z=x;
+                                    previous=current;
+                                    flag=1;
+                                }
+                            }
+                            x++;
+                            current=current->next;
+                        }
+                        if(flag==1)
+                        {
+                            previous->bursttime=previous->bursttime-1;
+                            if(previous->bursttime==0)
+                            {
+                                sumt=sumt+timer-previous->arrivaltime+1;
+                                sumw=sumw+timer-previous->arrivaltime-previous->og+1;
+                                y--;
+                            }
+                            printf("P%d ",z);
+                        }
+                        else
+                        printf("GAP ");
+                        if(y==0)
+                        break;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }
+                break;
+            }
+            case 6:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    float og;
+                    struct node *next;
+                };
+                
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node* new=NULL;
+                
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {       
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%2)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%2)
+                            new->arrivaltime=num;
+                            else
+                            {
+                                new->bursttime=num;
+                                new->og=num;
+                            }
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    int y=n;
+                    float sumt=0,sumw=0;
+                    int minb=1000;
+                    for(int timer=0;timer<1000;timer++)
+                    {
+                        current=head;
+                        int x=1,z,flag=0;
+                        minb=1000;
+                        while(current!=NULL)
+                        {
+                            if(current->arrivaltime<=timer && current->bursttime!=0)
+                            {
+                                if(current->bursttime<minb)
+                                {
+                                    minb=current->bursttime;
+                                    z=x;
+                                    previous=current;
+                                    flag=1;
+                                }
+                            }
+                            x++;
+                            current=current->next;
+                        }
+                        if(flag==1)
+                        {
+                            previous->bursttime=previous->bursttime-1;
+                            if(previous->bursttime==0)
+                            {
+                                sumt=sumt+timer-previous->arrivaltime+1;
+                                sumw=sumw+timer-previous->arrivaltime-previous->og+1;
+                                y--;
+                            }
+                            printf("P%d ",z);
+                        }
+                        else
+                        printf("GAP ");
+                        if(y==0)
+                        break;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }            
+                break;
+            }
+            case 7:
+            {
+                struct node
+                { 
+                    float arrivaltime;
+                    float bursttime;
+                    float og;
+                    struct node *next;
+                };
+                
+                struct node *head = NULL;
+                struct node *current = NULL;
+                struct node *previous = NULL;
+                struct node* new=NULL;
+                
+                FILE *f = fopen("Data.txt","r");
+                int n;
+                if (f == NULL) 
+                printf("Unable to open the file.\n");
+                else
+                {
+                    int j=0;
+                    int num;
+                    current=head;
+                    while (fscanf(f, "%d", &num) != EOF)
+                    {
+                        if(j==0)
+                        n=num;
+                        else
+                        {
+                            if(j%2)
+                            new=(struct node*)malloc(sizeof(struct node));
+                            if(head==NULL)
+                            head=new;
+                            else
+                            current->next=new;
+                            current=new;
+                            new->next=NULL;
+                            if(j%2)
+                            new->arrivaltime=num;
+                            else
+                            {
+                                new->bursttime=num;
+                                new->og=num;
+                            }
+                        }
+                        j++;
+                    }
+                    fclose(f);
+                    int y=n;
+                    float sumt=0,sumw=0;
+                    int maxb=0;
+                    for(int timer=0;timer<1000;timer++)
+                    {
+                        current=head;
+                        int x=1,z,flag=0;
+                        maxb=0;
+                        while(current!=NULL)
+                        {
+                            if(current->arrivaltime<=timer && current->bursttime!=0)
+                            {
+                                if(current->bursttime>maxb)
+                                {
+                                    maxb=current->bursttime;
+                                    z=x;
+                                    previous=current;
+                                    flag=1;
+                                }
+                            }
+                            x++;
+                            current=current->next;
+                        }
+                        if(flag==1)
+                        {
+                            previous->bursttime=previous->bursttime-1;
+                            if(previous->bursttime==0)
+                            {
+                                sumt=sumt+timer-previous->arrivaltime+1;
+                                sumw=sumw+timer-previous->arrivaltime-previous->og+1;
+                                y--;
+                            }
+                            printf("P%d ",z);
+                        }
+                        else
+                        printf("GAP ");
+                        if(y==0)
+                        break;
+                    }
+                    printf("\n");
+                    printf("Average Turn Around Time : %f\n",sumt/n);
+                    printf("Average Waiting Time : %f\n",sumw/n);
+                }
+                break;
+            }
+            case 8:
+            {
+                exit(0);
+            }
+            default:
+            printf("Please Enter A Valid Choice\n");            
+        }
+    }
+    
+}
